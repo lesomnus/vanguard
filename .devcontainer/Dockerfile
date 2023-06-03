@@ -1,12 +1,6 @@
 FROM ghcr.io/lesomnus/dev-node:18
 
 RUN cd ~ \
-	&& curl -o protoc.zip -L https://github.com/protocolbuffers/protobuf/releases/download/v3.20.1/protoc-3.20.1-linux-x86_64.zip \
-	&& unzip protoc.zip bin/protoc -d /usr/local \
-	&& chmod 755 /usr/local/bin/protoc \
-	&& rm -f protoc.zip
-
-RUN cd ~ \
 	&& wget -O chrome.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
 	&& apt update \
 	&& apt install ./chrome.deb --yes \

@@ -1,5 +1,5 @@
 {
-	"name": "vanguard",
+	"name": "@lesomnus/vanguard",
 	"version": "0.0.1",
 	"description": "Signaling with data channel",
 	"source": "src/index.ts",
