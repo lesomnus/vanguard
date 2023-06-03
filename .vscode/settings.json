@@ -1,0 +1,11 @@
+{
+	"typescript.tsdk": "node_modules/typescript/lib",
+	"xo.enable": true,
+	"xo.format.enable": true,
+	"[javascript]": {
+		"editor.defaultFormatter": "samverschueren.linter-xo"
+	},
+	"[typescript]": {
+		"editor.defaultFormatter": "samverschueren.linter-xo"
+	}
+}

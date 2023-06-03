@@ -1,0 +1,23 @@
+{
+	"name": "vanguard",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"runArgs": [
+		"--network=host",
+		"--security-opt=seccomp:unconfined"
+	],
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"editor.detectIndentation": false,
+				"editor.insertSpaces": false
+			},
+			"extensions": [
+				"samverschueren.linter-xo",
+				"orta.vscode-jest",
+				"streetsidesoftware.code-spell-checker"
+			]
+		}
+	}
+}
