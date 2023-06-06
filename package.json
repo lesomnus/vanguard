@@ -1,6 +1,6 @@
 {
 	"name": "@lesomnus/vanguard",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "Signaling with data channel",
 	"source": "src/index.ts",
 	"browser": "dist/index.js",

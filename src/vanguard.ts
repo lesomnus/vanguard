@@ -2,6 +2,8 @@ import { EventSource, TypedEventEmitter } from './event'
 import type { SigMessage, SigChanEvents, SigChannel } from './signaling'
 import type { PeerEvents, Peer } from './peer'
 
+const MaxUint32 = (2 ** 32) - 1
+
 type Muxed = {
 	port: number;
 }
@@ -9,7 +11,7 @@ type Muxed = {
 type CtrlMessage
 	= { kind: 'closing' }
 	| { kind: 'close-ack' }
-	| { kind: 'connect' } & Muxed
+	| { kind: 'connect' } & Muxed & { label: string }
 	| { kind: 'accept' } & Muxed
 	| { kind: 'reject' } & Muxed
 	| { kind: 'signal' } & Muxed & { message: SigMessage }
@@ -103,7 +105,7 @@ class SignalingServer extends EventSource<Pick<PeerEvents, 'offer'>> {
 		super()
 		this.#ctrl = ctrl
 
-		ctrl.on('connect', ({ port }) => {
+		ctrl.on('connect', ({ port, label }) => {
 			if (this.#channels.has(port)) {
 				ctrl.send({ kind: 'reject', port })
 				return
@@ -117,7 +119,7 @@ class SignalingServer extends EventSource<Pick<PeerEvents, 'offer'>> {
 			})
 
 			this.#channels.set(port, channel)
-			this.emit('offer', channel)
+			this.emit('offer', channel, label)
 		})
 		ctrl.on('signal', ({ port, message }) => {
 			const channel = this.#channels.get(port)
@@ -125,20 +127,24 @@ class SignalingServer extends EventSource<Pick<PeerEvents, 'offer'>> {
 				return
 			}
 
-			// TODO: I think it is safe, but how to conform?
+			// TODO: I think it is type safe, but how to conform?
 			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 			// @ts-expect-error
 			channel.emit(message.kind, message)
 		})
 	}
 
-	async offer(conn: RTCPeerConnection): Promise<Peer> {
-		return offer(conn, await this.createChannel())
+	async offer(conn: RTCPeerConnection, label?: string): Promise<Peer> {
+		return offer(conn, await this.createChannel(label))
 	}
 
-	async createChannel(): Promise<SigChannel> {
+	async createChannel(label?: string): Promise<SigChannel> {
+		if (label === undefined) {
+			label = (Math.random() + 1).toString(36).slice(2)
+		}
+
 		while (!this.#ctrl.closed) {
-			const port = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)
+			const port = Math.floor(Math.random() * MaxUint32)
 			if (this.#channels.has(port)) {
 				continue
 			}
@@ -146,7 +152,7 @@ class SignalingServer extends EventSource<Pick<PeerEvents, 'offer'>> {
 			const channel = new VanguardChan(this.#ctrl, port)
 			this.#channels.set(port, channel)
 
-			this.#ctrl.send({ kind: 'connect', port })
+			this.#ctrl.send({ kind: 'connect', port, label })
 			try {
 				await new Promise<void>((resolve, reject) => {
 					const ctrl = this.#ctrl
@@ -201,8 +207,8 @@ class Vanguard extends EventSource<PeerEvents> implements Peer {
 			this.emit('close')
 		})
 
-		this.#server.on('offer', channel => {
-			if (!this.emit('offer', channel)) {
+		this.#server.on('offer', (channel, label) => {
+			if (!this.emit('offer', channel, label)) {
 				// Reject will cause endless offer from remote peer since the current implementation
 				// keeps trying to offer until it is accepted.
 				console.warn('offer ignored')
@@ -213,8 +219,8 @@ class Vanguard extends EventSource<PeerEvents> implements Peer {
 		})
 	}
 
-	async offer(conn: RTCPeerConnection): Promise<Peer> {
-		return this.#server.offer(conn)
+	async offer(conn: RTCPeerConnection, label?: string): Promise<Peer> {
+		return this.#server.offer(conn, label)
 	}
 
 	get conn(): RTCPeerConnection {

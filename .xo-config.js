@@ -13,10 +13,10 @@ module.exports = {
 		'@typescript-eslint/naming-convention': [
 			'error',
 			{
-			  selector: ['variable'],
-			  format: ['snake_case', 'PascalCase'],
-			  leadingUnderscore: 'forbid',
-			  trailingUnderscore: 'forbid'
+				selector: ['variable'],
+				format: ['snake_case', 'PascalCase'],
+				leadingUnderscore: 'forbid',
+				trailingUnderscore: 'forbid'
 			}
 		]
 	},
