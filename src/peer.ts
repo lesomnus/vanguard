@@ -2,12 +2,12 @@ import type { Listenable } from './event'
 import type { SigChannel } from './signaling'
 
 export type PeerEvents = {
-	'offer': (channel: SigChannel) => void;
+	'offer': (channel: SigChannel, label: string) => void;
 	'close': () => void;
 }
 
 export type Peer = Listenable<PeerEvents> & {
-	offer(conn: RTCPeerConnection): Promise<Peer>;
+	offer(conn: RTCPeerConnection, label?: string): Promise<Peer>;
 	close(): Promise<void>;
 
 	get closed(): boolean;
